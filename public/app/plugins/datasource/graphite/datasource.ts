@@ -11,6 +11,8 @@ export function GraphiteDatasource(instanceSettings, $q, backendSrv, templateSrv
   this.basicAuth = instanceSettings.basicAuth;
   this.url = instanceSettings.url;
   this.name = instanceSettings.name;
+  this.token = instanceSettings.jsonData.token;
+  this.bucketSizeSeconds = instanceSettings.jsonData.bucketSizeSeconds || 60;
   this.graphiteVersion = instanceSettings.jsonData.graphiteVersion || '0.9';
   this.cacheTimeout = instanceSettings.cacheTimeout;
   this.withCredentials = instanceSettings.withCredentials;
@@ -37,6 +39,8 @@ export function GraphiteDatasource(instanceSettings, $q, backendSrv, templateSrv
       format: options.format,
       cacheTimeout: options.cacheTimeout || this.cacheTimeout,
       maxDataPoints: options.maxDataPoints,
+      token: this.token,
+      bucketSizeSeconds: this.bucketSizeSeconds
     };
 
     var params = this.buildGraphiteParams(graphOptions, options.scopedVars);
@@ -182,7 +186,8 @@ export function GraphiteDatasource(instanceSettings, $q, backendSrv, templateSrv
       method: 'GET',
       url: '/metrics/find',
       params: {
-        query: interpolatedQuery
+        query: interpolatedQuery,
+        token: options.token
       },
       // for cancellations
       requestId: options.requestId,
@@ -192,6 +197,8 @@ export function GraphiteDatasource(instanceSettings, $q, backendSrv, templateSrv
       httpOptions.params.from = this.translateTime(options.range.from, false);
       httpOptions.params.until = this.translateTime(options.range.to, true);
     }
+
+    httpOptions.params.token = this.token;
 
     return this.doGraphiteRequest(httpOptions).then(results => {
       return _.map(results.data, metric => {
@@ -227,7 +234,7 @@ export function GraphiteDatasource(instanceSettings, $q, backendSrv, templateSrv
   this._seriesRefLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
   this.buildGraphiteParams = function(options, scopedVars) {
-    var graphite_options = ['from', 'until', 'rawData', 'format', 'maxDataPoints', 'cacheTimeout'];
+    var graphite_options = ['from', 'until', 'rawData', 'format', 'maxDataPoints', 'cacheTimeout', 'token', 'bucketSizeSeconds'];
     var clean_options = [], targets = {};
     var target, targetValue, i;
     var regex = /\#([A-Z])/g;

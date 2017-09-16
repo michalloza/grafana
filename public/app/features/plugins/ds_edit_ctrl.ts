@@ -12,6 +12,8 @@ var defaults = {
   name: '',
   type: 'graphite',
   url: '',
+  token: '',
+  bucketSizeSeconds: 60,
   access: 'proxy',
   jsonData: {},
   secureJsonFields: {},
