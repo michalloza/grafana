@@ -15,12 +15,24 @@ export class MysqlDatasource {
     this.responseParser = new ResponseParser(this.$q);
   }
 
-  interpolateVariable(value) {
+  interpolateVariable(value, variable) {
     if (typeof value === 'string') {
-      return '\'' + value + '\'';
+      if (variable.multi || variable.includeAll) {
+        return '\'' + value + '\'';
+      } else {
+        return value;
+      }
+    }
+
+    if (typeof value === 'number') {
+      return value;
     }
 
     var quotedValues = _.map(value, function(val) {
+      if (typeof value === 'number') {
+        return value;
+      }
+
       return '\'' + val + '\'';
     });
     return  quotedValues.join(',');
@@ -118,13 +130,13 @@ export class MysqlDatasource {
         }],
       }
     }).then(res => {
-      return { status: "success", message: "Database Connection OK", title: "Success" };
+      return { status: "success", message: "Database Connection OK"};
     }).catch(err => {
       console.log(err);
       if (err.data && err.data.message) {
-        return { status: "error", message: err.data.message, title: "Error" };
+        return { status: "error", message: err.data.message };
       } else {
-        return { status: "error", message: err.status, title: "Error" };
+        return { status: "error", message: err.status };
       }
     });
   }

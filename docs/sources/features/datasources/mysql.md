@@ -11,8 +11,7 @@ weight = 7
 
 # Using MySQL in Grafana
 
-> Only available in Grafana v4.3+. This data source is not ready for
-> production use, currently in development (alpha state).
+> Only available in Grafana v4.3+.
 
 Grafana ships with a built-in MySQL data source plugin that allow you to query any visualize
 data from a MySQL compatible database.
@@ -58,8 +57,7 @@ If the `Format as` query option is set to `Table` then you can basically do any 
 
 Query editor with example query:
 
-![](/img/docs/v43/mysql_table_query.png)
-
+{{< docs-imagebox img="/img/docs/v45/mysql_table_query.png" >}}
 
 The query:
 
@@ -144,7 +142,11 @@ SELECT hostname FROM my_host  WHERE region IN($region)
 
 ### Using Variables in Queries
 
-Template variables are quoted automatically so if it is a string value do not wrap them in quotes in where clauses. If the variable is a multi-value variable then use the `IN` comparison operator rather than `=` to match against multiple values.
+From Grafana 4.3.0 to 4.6.0, template variables are always quoted automatically so if it is a string value do not wrap them in quotes in where clauses.
+
+From Grafana 4.7.0, template variable values are only quoted when the template variable is a `multi-value`.
+
+If the variable is a multi-value variable then use the `IN` comparison operator rather than `=` to match against multiple values.
 
 There are two syntaxes:
 
@@ -172,7 +174,28 @@ WHERE $__timeFilter(atimestamp) and hostname in([[hostname]])
 ORDER BY atimestamp ASC
 ```
 
+## Annotations
+
+[Annotations]({{< relref "reference/annotations.md" >}}) allows you to overlay rich event information on top of graphs. You add annotation queries via the Dashboard menu / Annotations view.
+
+An example query:
+
+```sql
+SELECT
+  UNIX_TIMESTAMP(atimestamp) as time_sec,
+  value as text,
+  CONCAT(tag1, ',', tag2) as tags
+FROM my_table
+WHERE $__timeFilter(atimestamp)
+ORDER BY atimestamp ASC
+```
+
+Name | Description
+------------ | -------------
+time_sec | The name of the date/time field.
+text | Event description field.
+tags | Optional field name to use for event tags as a comma separated string.
+
 ## Alerting
 
-Time series queries should work in alerting conditions. Table formatted queries is not yet supported in alert rule
-conditions.
+Time series queries should work in alerting conditions. Table formatted queries is not yet supported in alert rule conditions.
